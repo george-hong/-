@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <span>第一个值：</span>
+        <input id="first-input" type="text">
+    </div>
+    <div>
+        <span>第二个值：</span>
+        <input id="second-input" type="text">
+    </div>
+
+    <button id="send-button">点击向worker发送消息</button>
+
+    <div>
+        <span>woker计算相乘返回的结果：</span>
+        <span id="worker-computed-input"></span>
+    </div>
+
+    <script>
+        const sendingbutton = document.querySelector('#send-button');
+        const firstInput = document.querySelector('#first-input');
+        const secondInput = document.querySelector('#second-input');
+        const workerComputedInput = document.querySelector('#worker-computed-input');
+        // 创建worker
+        // 
+        const worker = new Worker('./worker.js');
+        // 绑定接收worker消息处理程序
+        worker.addEventListener('message', (event) => {
+            console.log('主线程接收message事件参数', event);
+            workerComputedInput.textContent = event.data;
+        });
+
+        sendingbutton.addEventListener('click', () => {
+            // 向worker发送消息
+            // 
+            // https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/postMessage
+            worker.postMessage([firstInput.value, secondInput.value]);
+        });
+
+        
+
+    </script>
+</body>
+</html>
