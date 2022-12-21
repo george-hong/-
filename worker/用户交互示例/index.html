@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+
+<input type="text" id="input">
+<div id="content-area">
+
+</div>
+
+<script>
+  const generateData = () => {
+    let str = '';
+    const charts = [
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'j',
+      'h',
+      'i',
+      'j',
+      'k',
+      'l',
+      'm',
+      'n',
+      'o',
+      'p',
+      'q',
+      'r',
+      's',
+      't',
+      'u',
+      'v',
+      'w',
+      'x',
+      'y',
+      'z',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '0',
+    ];
+    const length = Math.random() * 20;
+    Array.apply(null, { length }).forEach(() => str += charts[Math.round(Math.random() * charts.length)]);
+    return str;
+  }
+  const data = Array.apply(null, { length: 10000 }).map(() => generateData());
+  const input = document.querySelector('#input');
+  const contentArea = document.querySelector('#content-area');
+  const setContent = (matchData, container) => {
+    if (matchData.length === 0) container.innerHTML = '';
+    else {
+      const fragment = document.createDocumentFragment();
+      matchData.forEach(data => {
+        const paragraph = document.createElement('p');
+        paragraph.innerText = data;
+        fragment.appendChild(paragraph);
+      });
+      container.innerHTML = '';
+      container.appendChild(fragment);
+    }
+  };
+
+
+  // 主线程运行
+  const getMatchedData = (data, userValue) => {
+    const regExp = new RegExp(userValue);
+    return data.filter(dataItem => regExp.test(dataItem));
+  };
+
+  input.addEventListener('input', (event) => {
+    const matchedData = getMatchedData(data, event.target.value);
+    setContent(matchedData, contentArea);
+  });
+
+
+
+  // worker运行
+  // const worker = new Worker('./worker.js');
+  // worker.postMessage({ type: 'set', data })
+  // worker.addEventListener('message', (event) => {
+  //   setContent(event.data, contentArea);
+  // });
+  // input.addEventListener('input', (event) => {
+  //   worker.postMessage({ type: 'filter', data: event.target.value });
+  // });
+</script>
+</body>
+</html>
