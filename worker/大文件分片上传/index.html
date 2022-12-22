@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+<input id="upload" type="file">
+<script>
+  const input = document.querySelector('#upload');
+  input.addEventListener('change', (event) => {
+    console.log('e', event, event.target.files);
+    console.log(URL.createObjectURL(event.target.files[0]));
+
+    new FileUpload(event.target.files[0]);
+  });
+
+
+  // source: https://developer.mozilla.org/zh-CN/docs/Web/API/File_API/Using_files_from_web_applications#%E4%BE%8B%E5%AD%90%EF%BC%9A%E4%B8%8A%E4%BC%A0%E4%B8%80%E4%B8%AA%E7%94%A8%E6%88%B7%E9%80%89%E6%8B%A9%E7%9A%84%E6%96%87%E4%BB%B6
+  function FileUpload(file) {
+    var reader = new FileReader();
+    var xhr = new XMLHttpRequest();
+
+
+    xhr.upload.addEventListener("load", function(e){
+      console.log('ok')
+    }, false);
+    xhr.open("POST", "http://demos.hacks.mozilla.org/paul/demos/resources/webservices/devnull.php");
+    xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+    reader.onload = function(evt) {
+      xhr.send(evt.target.result);
+    };
+    reader.readAsBinaryString(file);
+  }
+</script>
+</body>
+</html>
