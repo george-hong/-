@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20"
+  },
+  "name": "learning-record-and-demo",
+  "version": "1.0.0",
+  "main": "node/index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "dev": "nodemon node/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/george-hong/learning-record-and-demo.git"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/george-hong/learning-record-and-demo/issues"
+  },
+  "homepage": "https://github.com/george-hong/learning-record-and-demo#readme",
+  "description": ""
+}
