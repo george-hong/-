@@ -1,0 +1,5 @@
+{
+  "execMap": {
+    "babel-node": "babel-node"
+  }
+}

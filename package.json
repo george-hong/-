@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@babel/core": "^7.20.7",
+    "@babel/node": "^7.20.7",
+    "@babel/preset-env": "^7.20.2",
     "express": "^4.18.2",
     "nodemon": "^2.0.20"
   },
@@ -10,7 +13,7 @@
     "example": "examples"
   },
   "scripts": {
-    "dev": "nodemon node/index.js"
+    "dev": "nodemon --exec babel-node node/index.js"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 import express from 'express';
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from 'node:url';
 import path, { dirname } from 'node:path';
 import workerRouter from './router/worker/index.js';
 
