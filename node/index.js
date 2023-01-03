@@ -1,6 +1,6 @@
 import express from 'express';
-import { fileURLToPath } from 'node:url';
-import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
 import workerRouter from './router/worker/index.js';
 
 const app = express();
