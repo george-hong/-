@@ -15,6 +15,55 @@
     console.log('e', event, event.target.files);
     console.log(URL.createObjectURL(event.target.files[0]));
 
+    // 获取文件对象
+    const file = event.target.files[0];
+    // 文件大小，单位：字节
+    const fileSize = file.size;
+    // 分片数量
+    const segmentNumber = 4;
+    // 生成分片索引
+    const indexes = [0];
+    if (segmentNumber > 1) {
+      for (let i = 1; i <= segmentNumber; i++) {
+        const currentIndex = Math.ceil(fileArrayBuffer.byteLength * (i / segmentNumber));
+        indexes.push(currentIndex);
+      }
+    }
+    // 获取分片的Blob
+    const blobs = [];
+    for (let i = 0; i < segmentNumber - 1; i++) {
+      const startIndex = indexes[i];
+      const endIndex = indexes[i + 1];
+      blobs.push(file.slice(startIndex, endIndex));
+    }
+
+    const fileReader = new FileReader();
+    fileReader.addEventListener('loadend', (event) => {
+      const fileArrayBuffer = event.currentTarget.result;
+      const segmentNumber = 4;
+      // 生成分片索引
+      const indexes = [0];
+      if (segmentNumber > 1) {
+        for (let i = 1; i <= segmentNumber; i++) {
+          const currentIndex = Math.ceil(fileArrayBuffer.byteLength * (i / segmentNumber));
+          indexes.push(currentIndex);
+        }
+      }
+      // 获取分片的Blob
+      const arrayBuffers = [];
+      for (let i = 0; i < segmentNumber - 1; i++) {
+        const startIndex = indexes[i];
+        const endIndex = indexes[i + 1];
+        arrayBuffers.push(fileArrayBuffer.slice(startIndex, endIndex));
+      }
+
+      console.log('arrayBuffers', arrayBuffers, fileArrayBuffer);
+    });
+    fileReader.readAsArrayBuffer(file);
+    console.log('blobs', blobs, indexes);
+
+
+
     new FileUpload(event.target.files[0]);
   });
 
