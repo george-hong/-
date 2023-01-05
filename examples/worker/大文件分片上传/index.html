@@ -23,66 +23,84 @@
     const segmentNumber = 4;
     // 生成分片索引
     const indexes = [0];
+
     if (segmentNumber > 1) {
       for (let i = 1; i <= segmentNumber; i++) {
-        const currentIndex = Math.ceil(fileArrayBuffer.byteLength * (i / segmentNumber));
+        const currentIndex = Math.ceil(fileSize * (i / segmentNumber));
         indexes.push(currentIndex);
       }
     }
     // 获取分片的Blob
     const blobs = [];
-    for (let i = 0; i < segmentNumber - 1; i++) {
+    const id = Date.now();
+    for (let i = 0; i < segmentNumber; i++) {
       const startIndex = indexes[i];
       const endIndex = indexes[i + 1];
-      blobs.push(file.slice(startIndex, endIndex));
+      const blob = file.slice(startIndex, endIndex);
+      blobs.push(blob);
+
+      console.log('blob', blobs, indexes);
+
+      const data = new FormData();
+      // https://developer.mozilla.org/en-US/docs/Web/API/FormData/append
+      // append 支持发送string、blob、file，其余类型会被转为string
+      data.append('total', segmentNumber);
+      data.append('index', i);
+      data.append('blob', blob);
+      data.append('id', id);
+
+      new FileUpload(data);
+
+      // const fileReader = new FileReader();
+      // fileReader.addEventListener('loadend', (result) => {
+      //   console.log('result', result)
+      //   arrayBuffer[i] = result.currentTarget.result;
+      // });
+      // fileReader.readAsArrayBuffer(file.slice(startIndex, endIndex));
     }
 
-    const fileReader = new FileReader();
-    fileReader.addEventListener('loadend', (event) => {
-      const fileArrayBuffer = event.currentTarget.result;
-      const segmentNumber = 4;
-      // 生成分片索引
-      const indexes = [0];
-      if (segmentNumber > 1) {
-        for (let i = 1; i <= segmentNumber; i++) {
-          const currentIndex = Math.ceil(fileArrayBuffer.byteLength * (i / segmentNumber));
-          indexes.push(currentIndex);
-        }
-      }
-      // 获取分片的Blob
-      const arrayBuffers = [];
-      for (let i = 0; i < segmentNumber - 1; i++) {
-        const startIndex = indexes[i];
-        const endIndex = indexes[i + 1];
-        arrayBuffers.push(fileArrayBuffer.slice(startIndex, endIndex));
-      }
+    // blobs.forEach(blob => new FileUpload(blob));
 
-      console.log('arrayBuffers', arrayBuffers, fileArrayBuffer);
-    });
-    fileReader.readAsArrayBuffer(file);
-    console.log('blobs', blobs, indexes);
-
-
-
-    new FileUpload(event.target.files[0]);
+    // const fileReader = new FileReader();
+    // fileReader.addEventListener('loadend', (event) => {
+    //   const fileArrayBuffer = event.currentTarget.result;
+    //   const segmentNumber = 4;
+    //   // 生成分片索引
+    //   const indexes = [0];
+    //   if (segmentNumber > 1) {
+    //     for (let i = 1; i <= segmentNumber; i++) {
+    //       const currentIndex = Math.ceil(fileArrayBuffer.byteLength * (i / segmentNumber));
+    //       indexes.push(currentIndex);
+    //     }
+    //   }
+    //   // 获取分片的Blob
+    //   const arrayBuffers = [];
+    //   for (let i = 0; i < segmentNumber; i++) {
+    //     const startIndex = indexes[i];
+    //     const endIndex = indexes[i + 1];
+    //     const arrayBufferSegment = fileArrayBuffer.slice(startIndex, endIndex);
+    //     arrayBuffers.push(arrayBufferSegment);
+    //     new FileUpload(arrayBufferSegment);
+    //   }
+    //
+    //   console.log('arrayBuffers', arrayBuffers, fileArrayBuffer);
+    // });
+    // fileReader.readAsArrayBuffer(file);
   });
 
 
   // source: https://developer.mozilla.org/zh-CN/docs/Web/API/File_API/Using_files_from_web_applications#%E4%BE%8B%E5%AD%90%EF%BC%9A%E4%B8%8A%E4%BC%A0%E4%B8%80%E4%B8%AA%E7%94%A8%E6%88%B7%E9%80%89%E6%8B%A9%E7%9A%84%E6%96%87%E4%BB%B6
   function FileUpload(file) {
-    var reader = new FileReader();
     var xhr = new XMLHttpRequest();
 
 
-    xhr.upload.addEventListener("load", function(e){
-      console.log('ok')
+    xhr.addEventListener("load", function(e){
+      console.log('ok', e)
     }, false);
-    xhr.open("POST", "http://demos.hacks.mozilla.org/paul/demos/resources/webservices/devnull.php");
-    xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
-    reader.onload = function(evt) {
-      xhr.send(evt.target.result);
-    };
-    reader.readAsBinaryString(file);
+    xhr.open('POST', 'http://localhost:3002/worker/upload');
+    // xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+    xhr.send(file);
+
   }
 </script>
 </body>
