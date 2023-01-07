@@ -12,8 +12,6 @@
 <script>
   const input = document.querySelector('#upload');
   input.addEventListener('change', (event) => {
-    console.log('e', event, event.target.files);
-    console.log(URL.createObjectURL(event.target.files[0]));
 
     // 获取文件对象
     const file = event.target.files[0];
@@ -24,29 +22,29 @@
     // 生成分片索引
     const indexes = [0];
 
-    if (segmentNumber > 1) {
+    if (segmentNumber > 0) {
       for (let i = 1; i <= segmentNumber; i++) {
         const currentIndex = Math.ceil(fileSize * (i / segmentNumber));
         indexes.push(currentIndex);
       }
     }
+
     // 获取分片的Blob
     const blobs = [];
     const id = Date.now();
     for (let i = 0; i < segmentNumber; i++) {
       const startIndex = indexes[i];
       const endIndex = indexes[i + 1];
-      const blob = file.slice(startIndex, endIndex);
+      const blob = file.slice(startIndex, endIndex, file.type);
       blobs.push(blob);
 
-      console.log('blob', blobs, indexes);
 
       const data = new FormData();
       // https://developer.mozilla.org/en-US/docs/Web/API/FormData/append
       // append 支持发送string、blob、file，其余类型会被转为string
       data.append('total', segmentNumber);
       data.append('index', i);
-      data.append('blob', blob);
+      data.append('blob', blob, `${id}-${i}.jpg`);
       data.append('id', id);
 
       new FileUpload(data);
