@@ -18,7 +18,7 @@
     // 文件大小，单位：字节
     const fileSize = file.size;
     // 分片数量
-    const segmentNumber = 4;
+    const segmentNumber = 2;
     // 生成分片索引
     const indexes = [0];
 
@@ -44,7 +44,7 @@
       // append 支持发送string、blob、file，其余类型会被转为string
       data.append('total', segmentNumber);
       data.append('index', i);
-      data.append('blob', blob, `${id}-${i}.jpg`);
+      data.append('blob', blob, `${id}.${i}.${segmentNumber}.jpg`);
       data.append('id', id);
 
       new FileUpload(data);
