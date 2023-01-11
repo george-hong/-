@@ -18,7 +18,7 @@
     // 文件大小，单位：字节
     const fileSize = file.size;
     // 分片数量
-    const segmentNumber = 2;
+    const segmentNumber = 8;
     // 生成分片索引
     const indexes = [0];
 
@@ -44,46 +44,11 @@
       // append 支持发送string、blob、file，其余类型会被转为string
       data.append('total', segmentNumber);
       data.append('index', i);
-      data.append('blob', blob, `${id}.${i}.${segmentNumber}.jpg`);
+      data.append('blob', blob, `${id}.${i}.${segmentNumber}.${file.name.split('.').pop()}`);
       data.append('id', id);
 
       new FileUpload(data);
-
-      // const fileReader = new FileReader();
-      // fileReader.addEventListener('loadend', (result) => {
-      //   console.log('result', result)
-      //   arrayBuffer[i] = result.currentTarget.result;
-      // });
-      // fileReader.readAsArrayBuffer(file.slice(startIndex, endIndex));
     }
-
-    // blobs.forEach(blob => new FileUpload(blob));
-
-    // const fileReader = new FileReader();
-    // fileReader.addEventListener('loadend', (event) => {
-    //   const fileArrayBuffer = event.currentTarget.result;
-    //   const segmentNumber = 4;
-    //   // 生成分片索引
-    //   const indexes = [0];
-    //   if (segmentNumber > 1) {
-    //     for (let i = 1; i <= segmentNumber; i++) {
-    //       const currentIndex = Math.ceil(fileArrayBuffer.byteLength * (i / segmentNumber));
-    //       indexes.push(currentIndex);
-    //     }
-    //   }
-    //   // 获取分片的Blob
-    //   const arrayBuffers = [];
-    //   for (let i = 0; i < segmentNumber; i++) {
-    //     const startIndex = indexes[i];
-    //     const endIndex = indexes[i + 1];
-    //     const arrayBufferSegment = fileArrayBuffer.slice(startIndex, endIndex);
-    //     arrayBuffers.push(arrayBufferSegment);
-    //     new FileUpload(arrayBufferSegment);
-    //   }
-    //
-    //   console.log('arrayBuffers', arrayBuffers, fileArrayBuffer);
-    // });
-    // fileReader.readAsArrayBuffer(file);
   });
 
 

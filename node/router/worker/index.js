@@ -2,8 +2,7 @@ import express from 'express';
 import formidable from 'formidable';
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
-import fs, { stat } from 'fs';
-import { readFile, appendFile } from 'fs/promises';
+import { readFile, appendFile, rm as removeFile, stat } from 'fs/promises';
 import { Buffer } from 'buffer';
 
 
@@ -16,10 +15,10 @@ const getType = (value) => {
 }
 
 let flag = true;
+const fileSplitter = '\\';
 
 class FileHelper {
   static getAllFilesPath(filePath) {
-    const fileSplitter = '\\';
     const segments = filePath.split(fileSplitter);
     const fileName = segments.pop();
     const path = segments.join(fileSplitter);
@@ -35,31 +34,14 @@ class FileHelper {
 
   // file name rule `${id}.${segmentIndex}.${totalSegments}.{format}`
   static checkSegmentsAllUploaded(fileName) {
-    return new Promise((resolve, reject) => {
-      const [id, index, total, extension] = fileName.split('.');
-      const fileStatus = Array
-        .apply(undefined, { length: total })
-        .map(() => ({ checked: false }));
-      let finished = false;
-      let hasError = false;
-      const onSegmentChecked = () => {
-        if (finished) return;
-        finished = fileStatus.every((stateInfo) => {
-          hasError = stateInfo.status === false;
-          return stateInfo.checked;
-        });
-        if (hasError) finished = true;
-        if (finished) hasError ? reject() : resolve();
-      };
-      fileStatus.forEach((status, index) => {
-        stat(path.join(__dirname, `../../file/${fileName}`), (err, stats) => {
-          fileStatus[index].status = true;
-          fileStatus[index].checked = true;
-          onSegmentChecked();
-        });
+    const promises = [];
+    const [id, index, total, extension] = fileName.split('.');
+    Array
+      .apply(undefined, { length: total })
+      .forEach((item, index) => {
+        promises.push(stat(path.join(__dirname, `../../file/${id}.${index}.${total}.${extension}`)));
       });
-
-    });
+    return Promise.all(promises);
   }
 
   static mergeFiles(files, newFileName) {
@@ -67,24 +49,28 @@ class FileHelper {
     files.forEach(filePath => {
       promises.push(readFile(filePath));
     });
-    Promise.all(promises)
-      .then((res) => {
-        console.log('read file success ----------', res)
-        const length = res.reduce((total, buffer) => {
-          total += buffer.length;
-          return total;
-        }, 0);
-        const fileBuffer = Buffer.concat(res, length);
-        appendFile(newFileName, fileBuffer);
-      })
-      .catch(err => {
-        console.log('read file err', err);
-      });
+    return new Promise((resolve, reject) => {
+      Promise.all(promises)
+        .then((res) => {
+          const fileBuffer = Buffer.concat(res);
+          appendFile(newFileName, fileBuffer)
+            .then(() => resolve())
+            .catch(err => reject(err));
+        })
+        .catch(reject);
+    });
+  }
+
+  static deleteFiles(filePaths) {
+    const promises = [];
+    filePaths.forEach(filePath => {
+      promises.push(removeFile(filePath));
+    });
+    return Promise.all(promises);
   }
 }
 
 router.post('/upload', function(req, res, next) {
-  console.log('in upload');
   const form = formidable({
     uploadDir: path.join(__dirname, '../../file'),
     filename(name, ext, part, form) {
@@ -96,33 +82,24 @@ router.post('/upload', function(req, res, next) {
       console.log('err', err);
       next(err);
     }
-    const { total, index, id } = fields;
-
-    // console.log('files', files)
 
     FileHelper.checkSegmentsAllUploaded(files.blob.newFilename)
       .then(result => {
-        console.log('success');
-        // console.log(FileHelper.getAllFilesPath(files.blob.filepath));
         if (!flag) return;
         flag = false;
-        FileHelper.mergeFiles(FileHelper.getAllFilesPath(files.blob.filepath), path.join(__dirname, '../../file/test.jpg'));
+        const filePaths = FileHelper.getAllFilesPath(files.blob.filepath);
+        const fileNameSegments = files.blob.filepath.split(fileSplitter).pop().split('.');
+        const id = fileNameSegments.shift();
+        const extension = fileNameSegments.pop();
+        FileHelper.mergeFiles(filePaths, path.join(__dirname, `../../file/${id}.${extension}`))
+          .then(() => FileHelper.deleteFiles(filePaths));
       })
       .catch(err => {
-        console.log('fail');
+        console.log('fail', err);
       })
       .finally(() => {
         res.send('success');
       });
-
-    // const { blob } = files;
-    // if (!arrayBufferMapping[id]) arrayBufferMapping[id] = {};
-    // arrayBufferMapping[id][index] = blob[0];
-    //
-    // const isFileLoaded = Array.apply(undefined, { length: total }).every((item, index) => !!arrayBufferMapping[id][index]);
-    // if (isFileLoaded) {
-    //   const file = new Blob(arrayBufferMapping[id], { type: 'image/png' });
-    // }
   });
 });
 
