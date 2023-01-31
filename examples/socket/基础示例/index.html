@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+
+<div>
+  <span>当前服务器消息：</span>
+  <span id="message"></span>
+</div>
+
+<button id="get-time">获取服务器时间</button>
+<button id="get-random-message">获取随机消息</button>
+<button id="send-empty">发送空消息</button>
+
+<script>
+  let socket;
+  const timeMessage = 'getTime';
+  const randomMessage = 'getRandomMessage';
+  const emptyMessage = '';
+
+  function createSocket(message) {
+    // 创建socket实例
+    const socket = new WebSocket('ws://localhost:3002/socket');
+    // 创建socket成功后立即给服务器发送消息
+    socket.addEventListener('open', () => {
+      socket.send(message);
+    });
+    // message事件用于监听服务器发送的消息
+    socket.addEventListener('message', (event) => {
+      console.log('message', event);
+      setMessage(event.data);
+    });
+
+    socket.addEventListener('close', (event) => {
+      console.log('close', event);
+    });
+
+    return socket;
+  }
+
+  function isSocketOpening(socket) {
+    return socket && socket.readyState === WebSocket.OPEN;
+  }
+
+  function sendMessage(message) {
+    if (!isSocketOpening(socket)) {
+      socket = createSocket(message);
+    } else {
+      socket.send(message);
+    }
+  }
+
+  function setMessage(message) {
+    document.querySelector('#message').innerHTML = message;
+  }
+
+  document.querySelector('#get-time').addEventListener('click', () => {
+    sendMessage(timeMessage);
+  });
+
+  document.querySelector('#get-random-message').addEventListener('click', () => {
+    sendMessage(randomMessage);
+  });
+
+  document.querySelector('#send-empty').addEventListener('click', () => {
+    sendMessage(emptyMessage);
+  });
+
+</script>
+</body>
+</html>
