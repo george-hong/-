@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+<script>
+    const reverseArr = arr => arr.slice().reverse()
+    const getValidNumber = value => Number(value) || 0
+
+    function customCalculate(limitedArray) {
+      // 把 limitedArray source diff三个数组倒过来方便获取需要进位的值
+      // limitedArray每个index的值表示后续用户传入的source对应index的最大值（不包含）
+      const limitedArrayReversed = reverseArr(limitedArray)
+      // 柯里化复用参数
+      // source 是当前的值
+      // diff 是需要相加的值
+      return function(source, diff) {
+        // 获取循环次数，是三个数组的最大长度
+        const maxLength = Math.max(
+          limitedArray.length,
+          source.length,
+          diff.length,
+        )
+        const sourceReversed = reverseArr(source)
+        const diffReversed = reverseArr(diff)
+        // 放置结果值的数组
+        const result = []
+        // 用于缓存每次需要进位的值
+        let valueToNext = 0
+        Array.apply(undefined, { length: maxLength }).forEach((sourceValue, index) => {
+          // 计算当前index的总和，等于 用户输入的值 + 需要相加的值 + 需要进位的值
+          let value = getValidNumber(sourceReversed[index]) + getValidNumber(diffReversed[index]) + valueToNext
+          // 获取当前index允许的最大值
+          const limitedValue = limitedArrayReversed[index]
+          // 如果限制了当前index的最大值
+          if (limitedValue) {
+            // 获取需要进位的值
+            valueToNext = Math.floor(value / limitedValue)
+            // 获取进位后，当前index的结果
+            value = value % limitedValue
+          }
+          // 记录结果
+          result.push(value)
+        })
+        // 恢复数组顺序
+        return result.reverse()
+      }
+    }
+
+
+    const timeCalculate = customCalculate([0, 24, 60, 60])
+
+
+    console.log(timeCalculate([12, 59, 59], [1]))
+
+    const timeString = '23:59:59'
+    const joiner = ':'
+    console.log(
+      timeCalculate(
+        timeString.split(joiner),
+        [1]
+      ).map(value => value.toString().padStart(2, '0')).join(joiner)
+    )
+
+</script>
+</body>
+</html>
